@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { X } from "lucide-react";
-import { api } from "../api";
+import { useStore } from "../store";
 
 const CATEGORIES = ["Food", "Transport", "Shopping", "Bills", "Entertainment", "Salary", "Other"];
 
-function formatINR(n) { return "₹" + Number(n).toLocaleString("en-IN"); }
-
-export default function AddTransactionSheet({ onClose, onSaved, showToast }) {
+export default function AddTransactionSheet({ onClose, showToast }) {
+  const { addTransaction } = useStore();
   const [form, setForm]     = useState({ amount: "", description: "", type: "expense", category: "Food" });
   const [err, setErr]       = useState("");
   const [saving, setSaving] = useState(false);
@@ -19,12 +18,11 @@ export default function AddTransactionSheet({ onClose, onSaved, showToast }) {
     if (!form.description.trim()) { setErr("Description is required."); return; }
     setSaving(true);
     try {
-      await api.addTransaction({ ...form, amount: amt });
+      await addTransaction({ ...form, amount: amt });
       showToast("Transaction saved!");
-      await onSaved();
       onClose();
     } catch (e) {
-      setErr(e.message);
+      setErr(e.message || "Failed to save transaction.");
     } finally {
       setSaving(false);
     }

@@ -15,8 +15,8 @@ User (Mobile Browser / Amplify)
 │  Mobile-first UI (430px frame)  │
 │  Hosted on AWS Amplify          │
 │                                 │
-│  4 Tabs: Home · Expenses        │
-│          Plans · Settings       │
+│  4 Pages: Home · Transactions   │
+│           Plans · Settings      │
 │  + Floating AI Coach (voice)    │
 └────────────┬────────────────────┘
              │  HTTPS fetch  (VITE_API_URL)
@@ -53,17 +53,19 @@ Most finance apps are **rear-view mirrors** — they show what you already spent
 - Ask "How can I save more?" → get a specific answer using your actual ₹ numbers
 - Run a What-If simulation → see how saving ₹3,000 more/month gets you to your goal 4 months sooner
 - Get a personalised investment allocation (Emergency Fund → FD/RD → Nifty 50 → Gold)
-- Plan purchases with the Wishlist: see exactly how many months until you can afford that washing machine
+- Plan purchases with the Wishlist: see exactly how many months until you can afford that item
+- Centralised React Context Store: instant real-time sync across all 4 pages upon adding transactions, seeding demo data, or importing UPI payments
 
 ---
 
-## Feature Areas
+## Feature Areas (4 Pages)
 
-| Area | What it does |
+| Page | What it does |
 |---|---|
-| **Home** | Balance card, income/expense mini cards, savings goal progress, add transactions |
-| **Expenses** | Full transaction list + Stats view with vertical category bars + comparison badges |
-| **Plans** | What-If simulator · Smart Investment Plan (JS math + AI explanation) · Wishlist purchase planner |
+| **Home** | Balance card, income/expense mini cards, savings goal progress, add transactions & seed demo data |
+| **Transactions** | Centralised transaction list + search filter + Stats view with vertical category bars & comparison badges |
+| **Plans** | Safe-to-Spend balance calculator · What-If simulator · Smart Investment Plan · Wishlist purchase planner |
+| **Settings** | Financial target preferences (budget, savings target) · UPI app auto-imports · Feature flags · Profile & Logout |
 | **AI Coach** | Voice input (Web Speech API, en-IN) + text chat + TTS playback, powered by Amazon Bedrock |
 
 ---
@@ -72,7 +74,7 @@ Most finance apps are **rear-view mirrors** — they show what you already spent
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19 + Vite, plain CSS (Poppins font, periwinkle theme), lucide-react icons |
+| Frontend | React 19 + Vite, plain CSS (Poppins font, periwinkle theme), shared store context, lucide-react icons |
 | Hosting | AWS Amplify |
 | API | Amazon API Gateway (HTTP API) |
 | Backend | AWS Lambda (Node.js 20, ES modules) |
@@ -87,11 +89,11 @@ Most finance apps are **rear-view mirrors** — they show what you already spent
 ```bash
 cd mint-app
 npm install
-# .env.local already has VITE_USE_MOCK=true — works without AWS
+# .env.local has VITE_USE_MOCK=true — works offline without AWS
 npm run dev
 ```
 
-To point at a real API:
+To point at a live AWS backend:
 ```bash
 # .env.local
 VITE_USE_MOCK=false

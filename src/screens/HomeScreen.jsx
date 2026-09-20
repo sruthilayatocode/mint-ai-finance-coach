@@ -1,24 +1,12 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { api } from "../api";
+import { useStore } from "../store";
 import AddTransactionSheet from "../components/AddTransactionSheet";
-
-const GOAL = 50000;
 
 function formatINR(n) {
   return "₹" + Number(n).toLocaleString("en-IN");
 }
 
-function buildSummary(txns) {
-  let inc = 0, exp = 0;
-  for (const t of txns) {
-    if (t.type === "income") inc += t.amount;
-    else exp += t.amount;
-  }
-  return { totalIncome: inc, totalExpenses: exp, balance: inc - exp };
-}
-
-// Friendly inline SVG illustration (plant / piggy bank icon)
 function HeroIllustration() {
   return (
     <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -34,12 +22,12 @@ function HeroIllustration() {
   );
 }
 
-export default function HomeScreen({ transactions, loading, onRefresh, showToast, user }) {
+export default function HomeScreen({ showToast, user }) {
+  const { transactions, loading, summary, goalPct, settings, seedData } = useStore();
   const [addOpen, setAddOpen] = useState(false);
   const [seeding, setSeeding] = useState(false);
 
-  const { totalIncome, totalExpenses, balance } = buildSummary(transactions);
-  const goalPct = Math.min(100, Math.max(0, Math.round((balance / GOAL) * 100)));
+  const { totalIncome, totalExpenses, balance } = summary;
   const recent = [...transactions].slice(0, 6);
 
   const CAT_ICONS = {
@@ -54,15 +42,16 @@ export default function HomeScreen({ transactions, loading, onRefresh, showToast
   async function handleSeed() {
     setSeeding(true);
     try {
-      const data = await api.seed();
-      showToast(`🎲 ${data.seeded} demo transactions loaded!`);
-      await onRefresh();
+      const res = await seedData();
+      showToast(`🎲 ${res.seeded || 15} demo transactions loaded!`);
     } catch {
       showToast("Seed failed. Check API URL.", "error");
     } finally {
       setSeeding(false);
     }
   }
+
+  const displayName = user?.name || settings?.name || "there";
 
   return (
     <>
@@ -71,7 +60,7 @@ export default function HomeScreen({ transactions, loading, onRefresh, showToast
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div>
             <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.7)", marginBottom: 2 }}>Good morning 🌿</p>
-            <h1 style={{ fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: -0.5 }}>Hello, {user?.name || "there"}.</h1>
+            <h1 style={{ fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: -0.5 }}>Hello, {displayName}.</h1>
           </div>
           <HeroIllustration />
         </div>
@@ -128,7 +117,7 @@ export default function HomeScreen({ transactions, loading, onRefresh, showToast
           <div className="goal-track"><div className="goal-fill" style={{ width: `${goalPct}%` }} /></div>
           <div className="goal-sub">
             <span>{formatINR(Math.max(0, balance))} saved</span>
-            <span>Target {formatINR(GOAL)}</span>
+            <span>Target {formatINR(settings.savingsGoal || 50000)}</span>
           </div>
         </div>
 
@@ -162,7 +151,7 @@ export default function HomeScreen({ transactions, loading, onRefresh, showToast
         ) : (
           <div className="txn-list" style={{ paddingBottom: 8 }}>
             {recent.map(t => (
-              <div key={t.id} className="txn-row">
+              <div key={t.id || t.timestamp} className="txn-row">
                 <div className={`txn-cat-icon ${CAT_CLASS[t.category] || "other"}`}>{CAT_ICONS[t.category] || "📦"}</div>
                 <div className="txn-row-info">
                   <div className="txn-row-name">{t.description}</div>
@@ -178,7 +167,7 @@ export default function HomeScreen({ transactions, loading, onRefresh, showToast
       {addOpen && (
         <AddTransactionSheet
           onClose={() => setAddOpen(false)}
-          onSaved={onRefresh}
+          onSaved={() => {}}
           showToast={showToast}
         />
       )}
