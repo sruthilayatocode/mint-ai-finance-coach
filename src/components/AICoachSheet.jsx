@@ -139,6 +139,7 @@ export default function AICoachSheet({ onClose, showToast }) {
           <div className="answer-bubble">
             <div className="answer-badge">🌿 MINT says</div>
             <div className="answer-text">{answer}</div>
+            <div className="answer-source">Answered by Amazon Bedrock</div>
           </div>
         )}
 

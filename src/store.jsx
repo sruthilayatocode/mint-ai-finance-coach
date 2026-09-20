@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from "react";
+import { createContext, useContext, useReducer, useCallback, useMemo } from "react";
 import { api } from "./api";
 import {
   buildSummary,
@@ -34,9 +34,12 @@ const DEFAULT_SETTINGS = {
     gpay: false,
     paytm: false,
     phonepe: false,
-    cards: { connected: true, imported: 12 },
+    bank: false,
+    cards: false,
   },
 };
+
+const importedKey = (sourceId) => `mint_imported_${sourceId}`;
 
 function loadStoredSettings() {
   try {
@@ -111,7 +114,8 @@ export function StoreProvider({ children }) {
       dispatch({ type: "SET_LOADING", payload: true });
       const res = await api.getTransactions();
       dispatch({ type: "SET_TRANSACTIONS", payload: res.transactions || [] });
-    } catch {
+    } catch (error) {
+      console.error("Failed to fetch transactions", error);
       dispatch({ type: "SET_LOADING", payload: false });
     }
   }, []);
@@ -129,10 +133,21 @@ export function StoreProvider({ children }) {
   }, [fetchTransactions]);
 
   const importSourceSamples = useCallback(async (sourceId, samples) => {
+    if (state.settings.sources[sourceId] === true) return { skipped: true, count: 0 };
+    try {
+      if (localStorage.getItem(importedKey(sourceId)) === "true") {
+        dispatch({ type: "TOGGLE_SOURCE", payload: sourceId });
+        return { skipped: true, count: 0 };
+      }
+    } catch {}
     await Promise.all(samples.map((s) => api.addTransaction(s)));
+    try {
+      localStorage.setItem(importedKey(sourceId), "true");
+    } catch {}
     dispatch({ type: "TOGGLE_SOURCE", payload: sourceId });
     await fetchTransactions();
-  }, [fetchTransactions]);
+    return { skipped: false, count: samples.length };
+  }, [fetchTransactions, state.settings.sources]);
 
   const updateSettings = useCallback((partial) => {
     dispatch({ type: "UPDATE_SETTINGS", payload: partial });

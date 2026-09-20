@@ -1,128 +1,110 @@
-# 🌿 MINT — Your Personal Financial Decision Coach
+# MINT - AI Financial Decision Coach
 
-> **WeMakeDevs × AWS First Commit Hackathon** · Mobile-first · AI-powered · ₹ first
+Most money apps show where money went. MINT helps decide the next move: what to reduce, what goal becomes possible, and how a small monthly change affects the timeline.
 
----
+MINT is a mobile-first React + Vite app built for the WeMakeDevs + AWS First Commit hackathon. It connects to a live AWS backend for transactions, AI coaching, and what-if explanations.
+
+## Features
+
+- Home dashboard with balance, income, expenses, emergency fund progress, demo data, and add transaction flow.
+- Transactions page with searchable history and spending stats.
+- AI coach with text and voice input, backed by Amazon Bedrock when AWS permissions are available.
+- What-If simulator comparing current and improved monthly savings timelines.
+- Investing guide and purchase price-watch demo for decision support.
+- Settings demo imports for bank, UPI, and cards, plus a live AWS cloud status card.
 
 ## Architecture
 
-```
-User (Mobile Browser / Amplify)
-    │
-    ▼
-┌─────────────────────────────────┐
-│  React 19 + Vite                │
-│  Mobile-first UI (430px frame)  │
-│  Hosted on AWS Amplify          │
-│                                 │
-│  4 Pages: Home · Transactions   │
-│           Plans · Settings      │
-│  + Floating AI Coach (voice)    │
-└────────────┬────────────────────┘
-             │  HTTPS fetch  (VITE_API_URL)
-             ▼
-┌─────────────────────────────────┐
-│  Amazon API Gateway (HTTP API)  │
-│  ANY /{proxy+} · CORS enabled   │
-└────────────┬────────────────────┘
-             │  Lambda Proxy
-             ▼
-┌─────────────────────────────────┐
-│  AWS Lambda  mint-handler       │
-│  Node.js 20 · ES module         │
-│  Routes: GET/POST /transactions │
-│          POST /seed /simulate   │
-│          POST /coach            │
-└────────┬────────────────────────┘
-         │                │
-         ▼                ▼
-┌──────────────┐  ┌────────────────────┐
-│  DynamoDB    │  │  Amazon Bedrock     │
-│  mint-       │  │  Converse API       │
-│  transactions│  │  Nova Lite / Claude │
-└──────────────┘  └────────────────────┘
+```mermaid
+flowchart LR
+  React[React + Vite mobile app] --> Amplify[AWS Amplify Hosting]
+  Amplify --> APIGW[Amazon API Gateway HTTP API]
+  APIGW --> Lambda[AWS Lambda]
+  Lambda --> DynamoDB[Amazon DynamoDB]
+  Lambda --> Bedrock[Amazon Bedrock]
 ```
 
----
+## AWS Services
 
-## The Problem
+- **AWS Amplify Hosting** serves the React frontend from the `dist` build output.
+- **Amazon API Gateway** exposes the HTTP API endpoints used by `src/api.js`.
+- **AWS Lambda** runs the backend router and business logic in `backend/lambda/index.mjs`.
+- **Amazon DynamoDB** stores demo transactions in the `mint-transactions` table with `userId` as the partition key and `id` as the sort key.
+- **Amazon Bedrock** powers `/coach` and the explanation text for `/simulate`.
 
-Most finance apps are **rear-view mirrors** — they show what you already spent.
-**MINT flips this.** It uses your real transaction data + Amazon Bedrock AI to coach your *next* decision:
+The backend default Bedrock model ID is:
 
-- Ask "How can I save more?" → get a specific answer using your actual ₹ numbers
-- Run a What-If simulation → see how saving ₹3,000 more/month gets you to your goal 4 months sooner
-- Get a personalised investment allocation (Emergency Fund → FD/RD → Nifty 50 → Gold)
-- Plan purchases with the Wishlist: see exactly how many months until you can afford that item
-- Centralised React Context Store: instant real-time sync across all 4 pages upon adding transactions, seeding demo data, or importing UPI payments
+```text
+anthropic.claude-3-haiku-20240307-v1:0
+```
 
----
+## Live API Contract
 
-## Feature Areas (4 Pages)
+Base URL:
 
-| Page | What it does |
-|---|---|
-| **Home** | Balance card, income/expense mini cards, savings goal progress, add transactions & seed demo data |
-| **Transactions** | Centralised transaction list + search filter + Stats view with vertical category bars & comparison badges |
-| **Plans** | Safe-to-Spend balance calculator · What-If simulator · Smart Investment Plan · Wishlist purchase planner |
-| **Settings** | Financial target preferences (budget, savings target) · UPI app auto-imports · Feature flags · Profile & Logout |
-| **AI Coach** | Voice input (Web Speech API, en-IN) + text chat + TTS playback, powered by Amazon Bedrock |
+```text
+https://i4wv2fi3p8.execute-api.us-east-1.amazonaws.com
+```
 
----
+Endpoints:
 
-## Tech Stack
+- `GET /transactions`
+- `POST /transactions`
+- `POST /seed`
+- `POST /simulate`
+- `POST /coach`
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 19 + Vite, plain CSS (Poppins font, periwinkle theme), shared store context, lucide-react icons |
-| Hosting | AWS Amplify |
-| API | Amazon API Gateway (HTTP API) |
-| Backend | AWS Lambda (Node.js 20, ES modules) |
-| Database | Amazon DynamoDB |
-| AI | Amazon Bedrock — Converse API |
-| Voice | Web Speech API (SpeechRecognition + SpeechSynthesis) |
-
----
-
-## Local Development
+## Run Locally
 
 ```bash
-cd mint-app
-npm install
-# .env.local has VITE_USE_MOCK=true — works offline without AWS
+npm ci
+cp .env.example .env.local
+```
+
+Set `.env.local`:
+
+```text
+VITE_API_URL=https://i4wv2fi3p8.execute-api.us-east-1.amazonaws.com
+VITE_USE_MOCK=false
+```
+
+Start the frontend:
+
+```bash
 npm run dev
 ```
 
-To point at a live AWS backend:
-```bash
-# .env.local
-VITE_USE_MOCK=false
-VITE_API_URL=https://your-api-id.execute-api.us-east-1.amazonaws.com
+Use mock mode by setting:
+
+```text
+VITE_USE_MOCK=true
 ```
 
-See [DEPLOY.md](./DEPLOY.md) for full AWS setup.
+## Amplify Deployment
 
----
+This repo uses a root frontend project. `amplify.yml` runs:
+
+```bash
+npm ci
+npm run build
+```
+
+Artifacts are served from:
+
+```text
+dist
+```
+
+Set these Amplify environment variables:
+
+```text
+VITE_API_URL=https://i4wv2fi3p8.execute-api.us-east-1.amazonaws.com
+VITE_USE_MOCK=false
+```
 
 ## Roadmap
 
-### Account Aggregator Integration
-Replace demo UPI import with **RBI-regulated Account Aggregator (AA) framework** for real, consent-based bank data access. Users grant explicit, revocable consent. FIPs (banks) push statement data to MINT via the AA network — zero screen-scraping, fully compliant.
-
-### Live Price Tracking & Push Notifications
-The Wishlist "Simulate price drop" is currently a demo. The production roadmap adds:
-- **Price webhooks** from partner APIs (Flipkart, Amazon India) that send real price-change events to a Lambda
-- **AWS SNS + Service Worker push notifications** to alert users when a wishlist item drops in price
-- In-app notification centre with price history charts
-
----
-
-## Lambda Routes
-
-| Method | Path | Description |
-|---|---|---|
-| GET | /transactions | List all transactions (newest first) |
-| POST | /transactions | Add a transaction |
-| POST | /seed | Insert 15 realistic demo transactions |
-| POST | /simulate | What-If calculator (JS math + AI explanation) |
-| POST | /coach | AI coach — answers questions from your real data |
+- Account Aggregator integration for real auto-tracking.
+- Live price tracking for watched purchases.
+- Push notifications for budget, price, and goal alerts.
+- Amazon Cognito authentication for real user accounts.

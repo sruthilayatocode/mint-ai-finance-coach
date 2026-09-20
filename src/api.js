@@ -1,8 +1,10 @@
 // src/api.js — central API layer for MINT
 // Set VITE_USE_MOCK=true in .env.local to run without a live backend.
 
-const API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
+const NORMAL_TIMEOUT_MS = 10000;
+const AI_TIMEOUT_MS = 30000;
 
 // ── Mock data store (in-memory) ───────────────────────────────────────────────
 const now = new Date();
@@ -47,8 +49,8 @@ const mock = {
   },
   async seed() {
     await delay(500);
-    // Already seeded above — no-op in mock; just return count
-    return { seeded: mockTxns.length };
+    // Already seeded above - no-op in mock; just return count
+    return { ok: true, count: mockTxns.length };
   },
   async simulate({ goal, currentMonthlySavings, newMonthlySavings }) {
     await delay(600);
@@ -67,42 +69,80 @@ const mock = {
   },
 };
 
-// ── Real API calls ────────────────────────────────────────────────────────────
-function getUserHeader() {
-  try {
-    const u = JSON.parse(localStorage.getItem("mint_user") || "null");
-    return u?.email ? { "x-user-id": u.email.toLowerCase() } : {};
-  } catch { return {}; }
+function normalizeTransaction(t) {
+  return {
+    ...t,
+    amount: Number(t.amount) || 0,
+    type: t.type === "income" ? "income" : "expense",
+    category: t.category || "Other",
+    description: t.description || "Transaction",
+    date: t.date || new Date().toISOString().slice(0, 10),
+  };
 }
 
-async function apiFetch(path, options = {}) {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...getUserHeader(),       // x-user-id: user email (ignored by mock mode)
-      ...(options.headers || {}),
-    },
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || `API error ${res.status}`);
-  return data;
+function normalizeTransactions(data) {
+  return {
+    ...data,
+    transactions: (data.transactions || []).map(normalizeTransaction),
+  };
+}
+
+function normalizeAddResult(data) {
+  return {
+    ...data,
+    transaction: data.transaction ? normalizeTransaction(data.transaction) : data.transaction,
+  };
+}
+
+async function apiFetch(path, options = {}, timeoutMs = NORMAL_TIMEOUT_MS) {
+  if (!API_URL) throw new Error("Missing VITE_API_URL");
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(`${API_URL}${path}`, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+    });
+    const text = await res.text();
+    const data = text ? JSON.parse(text) : {};
+    if (!res.ok) throw new Error(data.error || data.message || `API error ${res.status}`);
+    return data;
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new Error("Request timed out. Please try again.");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ── Public API surface ────────────────────────────────────────────────────────
 export const api = {
   getTransactions: () =>
-    USE_MOCK ? mock.getTransactions() : apiFetch("/transactions"),
+    USE_MOCK ? mock.getTransactions() : apiFetch("/transactions").then(normalizeTransactions),
 
   addTransaction: (body) =>
-    USE_MOCK ? mock.addTransaction(body) : apiFetch("/transactions", { method: "POST", body: JSON.stringify(body) }),
+    USE_MOCK ? mock.addTransaction(body) : apiFetch("/transactions", { method: "POST", body: JSON.stringify(body) }).then(normalizeAddResult),
 
   seed: () =>
     USE_MOCK ? mock.seed() : apiFetch("/seed", { method: "POST" }),
 
   simulate: (body) =>
-    USE_MOCK ? mock.simulate(body) : apiFetch("/simulate", { method: "POST", body: JSON.stringify(body) }),
+    USE_MOCK ? mock.simulate(body) : apiFetch("/simulate", { method: "POST", body: JSON.stringify(body) }, AI_TIMEOUT_MS),
 
   coach: (body) =>
-    USE_MOCK ? mock.coach(body) : apiFetch("/coach", { method: "POST", body: JSON.stringify(body) }),
+    USE_MOCK ? mock.coach(body) : apiFetch("/coach", { method: "POST", body: JSON.stringify(body) }, AI_TIMEOUT_MS),
+
+  async ping() {
+    const started = performance.now();
+    await (USE_MOCK ? mock.getTransactions() : apiFetch("/transactions"));
+    return Math.round(performance.now() - started);
+  },
 };

@@ -40,12 +40,13 @@ export default function HomeScreen({ showToast, user }) {
   };
 
   async function handleSeed() {
+    if (seeding) return;
     setSeeding(true);
     try {
       const res = await seedData();
-      showToast(`🎲 ${res.seeded || 15} demo transactions loaded!`);
-    } catch {
-      showToast("Seed failed. Check API URL.", "error");
+      showToast(`Demo data loaded: ${res.count || res.seeded || 0} transactions`);
+    } catch (error) {
+      showToast(`Seed failed: ${error.message}`, "error");
     } finally {
       setSeeding(false);
     }

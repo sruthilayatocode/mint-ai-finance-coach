@@ -1,33 +1,67 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useStore } from "../store";
-import { Loader, LogOut, Trash2, CheckCircle } from "lucide-react";
+import { api } from "../api";
+import { Cloud, Loader, LogOut, RefreshCw, Trash2 } from "lucide-react";
 
-const UPI_SAMPLES = [
-  { description: "Swiggy via GPay",    amount: 340,  type: "expense", category: "Food" },
-  { description: "Uber via Paytm",     amount: 180,  type: "expense", category: "Transport" },
-  { description: "Amazon via PhonePe", amount: 1250, type: "expense", category: "Shopping" },
-  { description: "Rent via GPay",      amount: 8000, type: "expense", category: "Bills" },
-];
+const SOURCE_SAMPLES = {
+  bank: [
+    { description: "HDFC salary credit", amount: 65000, type: "income", category: "Salary" },
+    { description: "HDFC electricity bill", amount: 2200, type: "expense", category: "Bills" },
+  ],
+  gpay: [
+    { description: "GPay Swiggy", amount: 340, type: "expense", category: "Food" },
+    { description: "GPay rent transfer", amount: 8000, type: "expense", category: "Bills" },
+  ],
+  paytm: [
+    { description: "Paytm Uber ride", amount: 180, type: "expense", category: "Transport" },
+    { description: "Paytm movie tickets", amount: 520, type: "expense", category: "Entertainment" },
+  ],
+  phonepe: [
+    { description: "PhonePe Amazon order", amount: 1250, type: "expense", category: "Shopping" },
+    { description: "PhonePe groceries", amount: 760, type: "expense", category: "Food" },
+  ],
+  cards: [
+    { description: "Credit card pharmacy", amount: 640, type: "expense", category: "Other" },
+    { description: "Credit card fuel", amount: 1500, type: "expense", category: "Transport" },
+  ],
+};
 
 const PAYMENT_APPS = [
+  { id: "bank",    name: "HDFC Bank",   emoji: "🏦", sub: "Bank transactions" },
   { id: "gpay",    name: "Google Pay",  emoji: "🟢", sub: "UPI payments" },
   { id: "paytm",   name: "Paytm",       emoji: "🔵", sub: "Wallet & UPI" },
   { id: "phonepe", name: "PhonePe",     emoji: "🟣", sub: "UPI transfers" },
+  { id: "cards",   name: "Cards",       emoji: "💳", sub: "Credit card spends" },
 ];
 
 export default function SettingsScreen({ showToast, user, onLogout }) {
   const { settings, updateSettings, toggleFlag, importSourceSamples } = useStore();
   const [syncing, setSyncing] = useState({});
+  const [cloud, setCloud] = useState({ loading: true, ok: false, latency: null });
+
+  async function refreshCloudStatus() {
+    setCloud(c => ({ ...c, loading: true }));
+    try {
+      const latency = await api.ping();
+      setCloud({ loading: false, ok: true, latency });
+    } catch {
+      setCloud({ loading: false, ok: false, latency: null });
+    }
+  }
+
+  useEffect(() => {
+    refreshCloudStatus();
+  }, []);
 
   async function handleConnect(appId) {
-    if (settings.sources[appId]) return;
+    if (settings.sources[appId] === true) return;
     setSyncing(s => ({ ...s, [appId]: true }));
     try {
-      const samples = UPI_SAMPLES.filter((_, i) => i < 3);
-      await importSourceSamples(appId, samples);
-      showToast(`✓ ${samples.length} transactions auto-imported!`);
-    } catch {
-      showToast("Import failed. Check connection.", "error");
+      const samples = SOURCE_SAMPLES[appId] || [];
+      const res = await importSourceSamples(appId, samples);
+      showToast(res.skipped ? "Already imported for this source." : `${samples.length} transactions imported`);
+    } catch (error) {
+      showToast(`Import failed: ${error.message}`, "error");
     } finally {
       setSyncing(s => ({ ...s, [appId]: false }));
     }
@@ -76,6 +110,22 @@ export default function SettingsScreen({ showToast, user, onLogout }) {
           </div>
         </div>
 
+        <div className="settings-section">
+          <div className="cloud-card">
+            <div className="cloud-icon"><Cloud size={18} /></div>
+            <div className="cloud-info">
+              <div className="payment-name">Cloud status</div>
+              <div className="payment-sub">AWS · us-east-1 · API Gateway + Lambda + DynamoDB + Bedrock</div>
+              <div className={`cloud-state ${cloud.ok ? "online" : "offline"}`}>
+                {cloud.loading ? "Checking..." : cloud.ok ? `Connected · ${cloud.latency} ms` : "Offline"}
+              </div>
+            </div>
+            <button className="icon-btn" onClick={refreshCloudStatus} disabled={cloud.loading} aria-label="Refresh cloud status">
+              <RefreshCw size={16} className={cloud.loading ? "spin-icon" : ""} />
+            </button>
+          </div>
+        </div>
+
         {/* Budget & Target Preferences */}
         <div className="settings-section">
           <div className="settings-title">Financial Preferences</div>
@@ -115,7 +165,7 @@ export default function SettingsScreen({ showToast, user, onLogout }) {
         <div className="settings-section">
           <div className="settings-title">Connect Payment Apps</div>
           {PAYMENT_APPS.map(app => {
-            const isConnected = !!settings.sources[app.id];
+            const isConnected = settings.sources[app.id] === true;
             const isSyncing = !!syncing[app.id];
             return (
               <div key={app.id} className="payment-card">

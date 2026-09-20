@@ -446,6 +446,7 @@ body {
 }
 .answer-badge { font-size: 11px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
 .answer-text  { font-size: 13px; font-weight: 500; color: var(--navy); line-height: 1.7; }
+.answer-source { font-size: 10px; font-weight: 700; color: var(--text-muted); margin-top: 10px; }
 
 /* ── Loading dots ────────────────────────────────────────────────────────────── */
 .loading-dots { display: flex; gap: 6px; padding: 12px; justify-content: center; }
@@ -558,6 +559,25 @@ body {
 .payment-info { flex: 1; }
 .payment-name { font-size: 14px; font-weight: 700; color: var(--navy); }
 .payment-sub  { font-size: 11px; font-weight: 500; color: var(--text-muted); margin-top: 2px; }
+.cloud-card {
+  background: var(--white); border-radius: var(--r-lg); padding: 16px 18px;
+  box-shadow: var(--shadow-card); display: flex; align-items: center; gap: 14px;
+}
+.cloud-icon {
+  width: 40px; height: 40px; border-radius: 12px; background: var(--blue-light);
+  color: var(--blue); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.cloud-info { flex: 1; min-width: 0; }
+.cloud-state { font-size: 11px; font-weight: 800; margin-top: 6px; }
+.cloud-state.online { color: var(--green); }
+.cloud-state.offline { color: var(--coral); }
+.icon-btn {
+  width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--cream-dark);
+  color: var(--navy); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+}
+.icon-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.spin-icon { animation: spin 1s linear infinite; }
 .toggle {
   width: 44px; height: 24px; background: var(--cream-dark); border-radius: 12px;
   position: relative; cursor: pointer; border: none; transition: background 0.25s; flex-shrink: 0;

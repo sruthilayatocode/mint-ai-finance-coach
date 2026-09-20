@@ -22,7 +22,7 @@ export default function InvestPanel({ transactions, showToast }) {
   const [coachAnswer, setCoachAnswer] = useState("");
   const [coachLoading, setCoachLoading] = useState(false);
 
-  const { inc, exp, surplus, emergencyTarget } = computePlan(transactions);
+  const { surplus, emergencyTarget } = computePlan(transactions);
 
   if (surplus <= 0) {
     return (
@@ -136,6 +136,7 @@ export default function InvestPanel({ transactions, showToast }) {
         <div className="answer-bubble" style={{ marginBottom: 12 }}>
           <div className="answer-badge">🤖 MINT says</div>
           <div className="answer-text">{coachAnswer}</div>
+          <div className="answer-source">Answered by Amazon Bedrock</div>
         </div>
       )}
 

@@ -94,6 +94,7 @@ export default function WhatIfPanel({ showToast }) {
             <div className="answer-bubble">
               <div className="answer-badge">🤖 MINT says</div>
               <div className="answer-text">{result.explanation}</div>
+              <div className="answer-source">Answered by Amazon Bedrock</div>
             </div>
           )}
         </div>
