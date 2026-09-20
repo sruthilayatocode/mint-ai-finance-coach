@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Home, Receipt, Target, Settings, Mic } from "lucide-react";
 import { StoreProvider, useStore } from "./store";
 import HomeScreen     from "./screens/HomeScreen";
@@ -21,6 +21,7 @@ function MainContent({ authScreen, setAuthScreen, user, setUser, toast, showToas
   const [tab, setTab]         = useState("home");
   const [coachOpen, setCoachOpen] = useState(false);
   const [appKey, setAppKey]   = useState(0);
+  const pageScrollRef = useRef(null);
 
   useEffect(() => {
     if (!authScreen) {
@@ -42,9 +43,17 @@ function MainContent({ authScreen, setAuthScreen, user, setUser, toast, showToas
     setAppKey(k => k + 1);
   }
 
+  function handleTabChange(nextTab) {
+    setTab(nextTab);
+    requestAnimationFrame(() => {
+      pageScrollRef.current?.scrollTo({ top: 0, behavior: "auto" });
+      window.scrollTo({ top: 0, behavior: "auto" });
+    });
+  }
+
   const TABS = [
     { id: "home",         label: "Home",         Icon: Home },
-    { id: "transactions", label: "Transactions", Icon: Receipt },
+    { id: "transactions", label: "Expenses",     Icon: Receipt },
     { id: "plans",        label: "Plans",        Icon: Target },
     { id: "settings",     label: "Settings",     Icon: Settings },
   ];
@@ -86,7 +95,7 @@ function MainContent({ authScreen, setAuthScreen, user, setUser, toast, showToas
       )}
 
       {/* Main Screen Views */}
-      <div className="page-scroll">
+      <div className="page-scroll" ref={pageScrollRef}>
         {tab === "home"         && <HomeScreen     showToast={showToast} user={user} />}
         {tab === "transactions" && <ExpensesScreen showToast={showToast} />}
         {tab === "plans"        && <PlansScreen    showToast={showToast} />}
@@ -94,14 +103,19 @@ function MainContent({ authScreen, setAuthScreen, user, setUser, toast, showToas
       </div>
 
       {/* Floating AI Coach FAB */}
-      <button className="fab-mic" onClick={() => setCoachOpen(true)} aria-label="Open AI Coach">
-        <Mic size={22} />
+      <button className="coach-fab" onClick={() => setCoachOpen(true)} aria-label="Open AI Coach">
+        <span className="coach-avatar" aria-hidden="true">
+          <span className="coach-avatar-face">₹</span>
+          <span className="coach-avatar-leaf" />
+        </span>
+        <span className="coach-fab-text">Ask MINT</span>
+        <span className="coach-mic"><Mic size={17} /></span>
       </button>
 
       {/* Bottom Nav */}
       <nav className="bottom-nav">
         {TABS.map(({ id, label, Icon }) => (
-          <button key={id} className={`nav-item ${tab === id ? "active" : ""}`} onClick={() => setTab(id)}>
+          <button key={id} className={`nav-item ${tab === id ? "active" : ""}`} onClick={() => handleTabChange(id)}>
             <Icon size={18} strokeWidth={tab === id ? 2.5 : 2} />
             <span className="nav-item-label">{label}</span>
             {tab === id && <span className="nav-dot" />}

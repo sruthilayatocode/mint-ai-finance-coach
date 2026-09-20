@@ -23,21 +23,11 @@ function HeroIllustration() {
 }
 
 export default function HomeScreen({ showToast, user }) {
-  const { transactions, loading, summary, goalPct, settings, seedData } = useStore();
+  const { loading, summary, goalPct, settings, seedData } = useStore();
   const [addOpen, setAddOpen] = useState(false);
   const [seeding, setSeeding] = useState(false);
 
   const { totalIncome, totalExpenses, balance } = summary;
-  const recent = [...transactions].slice(0, 6);
-
-  const CAT_ICONS = {
-    Food: "🍔", Transport: "🚌", Shopping: "🛍️",
-    Bills: "📄", Entertainment: "🎬", Salary: "💰", Other: "📦",
-  };
-  const CAT_CLASS = {
-    Food: "food", Transport: "transport", Shopping: "shopping",
-    Bills: "bills", Entertainment: "entertainment", Salary: "salary", Other: "other",
-  };
 
   async function handleSeed() {
     if (seeding) return;
@@ -127,42 +117,6 @@ export default function HomeScreen({ showToast, user }) {
           <Plus size={16} style={{ verticalAlign: "middle", marginRight: 6 }} />
           Add Transaction
         </button>
-
-        {/* Recent transactions */}
-        <div className="section-heading">
-          Recent
-          <span className="section-heading-link">{transactions.length} total</span>
-        </div>
-
-        {loading ? (
-          [1,2,3].map(i => (
-            <div key={i} style={{ display:"flex", gap:12, marginBottom:10 }}>
-              <div className="skeleton" style={{ width:40, height:40, borderRadius:14, flexShrink:0 }} />
-              <div style={{ flex:1 }}>
-                <div className="skeleton" style={{ height:14, width:"65%", marginBottom:6 }} />
-                <div className="skeleton" style={{ height:11, width:"40%" }} />
-              </div>
-            </div>
-          ))
-        ) : recent.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">💸</div>
-            <div className="empty-text">No transactions yet.<br/>Load demo data or add one above!</div>
-          </div>
-        ) : (
-          <div className="txn-list" style={{ paddingBottom: 8 }}>
-            {recent.map(t => (
-              <div key={t.id || t.timestamp} className="txn-row">
-                <div className={`txn-cat-icon ${CAT_CLASS[t.category] || "other"}`}>{CAT_ICONS[t.category] || "📦"}</div>
-                <div className="txn-row-info">
-                  <div className="txn-row-name">{t.description}</div>
-                  <div className="txn-row-date">{t.category} · {t.date}</div>
-                </div>
-                <div className={`txn-row-amount ${t.type}`}>{t.type === "income" ? "+" : "-"}{formatINR(t.amount)}</div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {addOpen && (

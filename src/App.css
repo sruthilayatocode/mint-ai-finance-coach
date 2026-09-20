@@ -49,14 +49,18 @@ body {
 #root {
   width: 100%;
   max-width: 430px;
+  height: 100vh;
   min-height: 100vh;
+  min-height: 100svh;
   position: relative;
   background: var(--bg);
+  overflow: hidden;
 }
 
 @media (min-width: 500px) {
   body { align-items: center; min-height: 100vh; padding: 24px 0; }
   #root {
+    height: min(900px, 96vh);
     min-height: min(900px, 96vh);
     max-height: 960px;
     border-radius: 40px;
@@ -70,7 +74,6 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 100vh;
   overflow: hidden;
   position: relative;
 }
@@ -84,16 +87,18 @@ body {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: 110px; /* room for bottom nav */
+  padding-bottom: 172px; /* room for coach button and bottom nav */
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   scrollbar-width: none;
+  scroll-behavior: auto;
 }
 .page-scroll::-webkit-scrollbar { display: none; }
 
 /* ── Bottom Nav ─────────────────────────────────────────────────────────────── */
 .bottom-nav {
   position: absolute;
-  bottom: 16px;
+  bottom: max(14px, env(safe-area-inset-bottom));
   left: 16px;
   right: 16px;
   height: 68px;
@@ -104,7 +109,7 @@ body {
   align-items: center;
   justify-content: space-around;
   padding: 0 8px;
-  z-index: 50;
+  z-index: 90;
 }
 
 .nav-item {
@@ -141,25 +146,52 @@ body {
   margin-top: 2px;
 }
 
-/* Floating Mic / FAB */
-.fab-mic {
+/* Floating AI Coach entry */
+.coach-fab {
   position: absolute;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 56px; height: 56px;
-  border-radius: 50%;
-  background: var(--orange);
+  right: 20px;
+  bottom: calc(max(14px, env(safe-area-inset-bottom)) + 82px);
+  min-width: 132px;
+  height: 52px;
+  border-radius: var(--r-full);
+  background: var(--white);
   border: none;
   cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 6px 8px 6px 6px;
   box-shadow: var(--shadow-float);
-  z-index: 60;
-  transition: transform 0.2s, box-shadow 0.2s;
-  color: var(--white);
+  z-index: 80;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  color: var(--navy);
+  font-family: inherit;
 }
-.fab-mic:hover { transform: translateX(-50%) scale(1.08); box-shadow: 0 12px 32px rgba(245,169,58,0.45); }
-.fab-mic:active { transform: translateX(-50%) scale(0.96); }
+.coach-fab:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(37,35,90,0.24); }
+.coach-fab:active { transform: translateY(0) scale(0.98); }
+.coach-avatar {
+  position: relative;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--green-light), var(--orange-light));
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.coach-avatar-face {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--navy); color: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 900;
+}
+.coach-avatar-leaf {
+  position: absolute; right: 4px; top: 3px;
+  width: 12px; height: 8px; border-radius: 8px 8px 8px 0;
+  background: var(--green); transform: rotate(-22deg);
+}
+.coach-fab-text { font-size: 12px; font-weight: 800; white-space: nowrap; }
+.coach-mic {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--orange); color: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
 
 /* ── Typography helpers ─────────────────────────────────────────────────────── */
 .text-navy   { color: var(--navy); }
