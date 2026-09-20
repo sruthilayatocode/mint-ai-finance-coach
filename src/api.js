@@ -49,7 +49,6 @@ const mock = {
   },
   async seed() {
     await delay(500);
-    // Already seeded above - no-op in mock; just return count
     return { ok: true, count: mockTxns.length };
   },
   async simulate({ goal, currentMonthlySavings, newMonthlySavings }) {
@@ -70,6 +69,7 @@ const mock = {
 };
 
 function normalizeTransaction(t) {
+  if (!t || typeof t !== "object") return t;
   return {
     ...t,
     amount: Number(t.amount) || 0,
@@ -81,16 +81,18 @@ function normalizeTransaction(t) {
 }
 
 function normalizeTransactions(data) {
+  const rawList = data?.transactions ?? (Array.isArray(data) ? data : []);
   return {
     ...data,
-    transactions: (data.transactions || []).map(normalizeTransaction),
+    transactions: rawList.map(normalizeTransaction),
   };
 }
 
 function normalizeAddResult(data) {
+  const rawTxn = data?.transaction ?? data;
   return {
     ...data,
-    transaction: data.transaction ? normalizeTransaction(data.transaction) : data.transaction,
+    transaction: normalizeTransaction(rawTxn),
   };
 }
 
