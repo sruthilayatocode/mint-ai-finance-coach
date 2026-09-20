@@ -2,55 +2,37 @@ import { useState } from "react";
 import { User } from "lucide-react";
 import "./auth.css";
 
-// ── Inline SVG: person with laptop (line art, small color accents) ────────────
 function MintIllustration() {
   return (
     <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      {/* floor */}
       <ellipse cx="90" cy="155" rx="58" ry="7" fill="#EEF0E8"/>
-      {/* cross-legged body */}
       <ellipse cx="90" cy="130" rx="28" ry="16" fill="#EEF0E8" stroke="#1a1a1a" strokeWidth="2"/>
-      {/* legs */}
       <path d="M63 135 Q55 150 72 155 Q82 160 90 155" stroke="#1a1a1a" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
       <path d="M117 135 Q125 150 108 155 Q98 160 90 155" stroke="#1a1a1a" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
-      {/* torso */}
       <rect x="75" y="104" width="30" height="28" rx="8" fill="#9BE564" stroke="#1a1a1a" strokeWidth="2"/>
-      {/* head */}
       <ellipse cx="90" cy="92" rx="18" ry="19" fill="#FAD4A8" stroke="#1a1a1a" strokeWidth="2"/>
-      {/* hair */}
       <path d="M72 90 Q73 70 90 69 Q107 68 108 90" fill="#1a1a1a" stroke="#1a1a1a" strokeWidth="1"/>
-      {/* hair curls */}
       <path d="M72 90 Q68 82 71 76" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round" fill="none"/>
       <path d="M108 90 Q112 82 109 76" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round" fill="none"/>
-      {/* eyes */}
       <circle cx="84" cy="93" r="2" fill="#1a1a1a"/>
       <circle cx="96" cy="93" r="2" fill="#1a1a1a"/>
-      {/* smile */}
       <path d="M85 99 Q90 103 95 99" stroke="#1a1a1a" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-      {/* left arm raised */}
       <path d="M75 112 Q60 100 58 88 Q56 80 62 77" stroke="#1a1a1a" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
-      {/* hand wave */}
       <circle cx="62" cy="75" r="5" fill="#FAD4A8" stroke="#1a1a1a" strokeWidth="1.8"/>
       <path d="M60 70 L60 64" stroke="#1a1a1a" strokeWidth="1.5" strokeLinecap="round"/>
       <path d="M63 69 L64 63" stroke="#1a1a1a" strokeWidth="1.5" strokeLinecap="round"/>
       <path d="M66 70 L68 65" stroke="#1a1a1a" strokeWidth="1.5" strokeLinecap="round"/>
-      {/* right arm → laptop */}
       <path d="M105 112 Q115 118 118 126" stroke="#1a1a1a" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
-      {/* laptop base */}
       <rect x="70" y="140" width="52" height="5" rx="2.5" fill="#1a1a1a"/>
-      {/* laptop screen */}
       <rect x="75" y="122" width="42" height="20" rx="3" fill="#1F3A0F" stroke="#1a1a1a" strokeWidth="1.5"/>
-      {/* screen glow — coin icon */}
       <circle cx="96" cy="132" r="6" fill="#9BE564" opacity="0.9"/>
       <text x="96" y="136" textAnchor="middle" fontSize="8" fill="#1F3A0F" fontWeight="bold">₹</text>
-      {/* sparkles */}
       <path d="M130 80 L131 74 L132 80 L138 81 L132 82 L131 88 L130 82 L124 81 Z" fill="#9BE564"/>
       <path d="M42 70 L43 66 L44 70 L48 71 L44 72 L43 76 L42 72 L38 71 Z" fill="#F5A93A" opacity="0.7"/>
     </svg>
   );
 }
 
-// ── Google "G" SVG icon ──────────────────────────────────────────────────────
 function GoogleIcon() {
   return (
     <svg className="google-g" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
@@ -62,7 +44,6 @@ function GoogleIcon() {
   );
 }
 
-// ── Apple icon ───────────────────────────────────────────────────────────────
 function AppleIcon() {
   return (
     <svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -73,45 +54,40 @@ function AppleIcon() {
 }
 
 export default function WelcomeScreen({ onNavigate, onLogin }) {
-  const [loading, setLoading] = useState(null); // "google" | "apple" | null
+  const [loading, setLoading] = useState(null);
 
   async function handleSocial(provider) {
     setLoading(provider);
-    // demo only; production will use Amazon Cognito federated sign-in
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise(r => setTimeout(r, 600));
     const userData = provider === "google"
-      ? { name: "Google User", email: "demo@google.mint" }
-      : { name: "Apple User",  email: "demo@apple.mint"  };
+      ? { name: "Google User", email: "user@google.com" }
+      : { name: "Apple User",  email: "user@apple.com"  };
     try { localStorage.setItem("mint_user", JSON.stringify(userData)); } catch {}
     setLoading(null);
     onLogin(userData);
   }
 
   function handleGuest() {
-    const userData = { name: "Guest", email: "guest@mint.demo" };
+    const userData = { name: "Guest", email: "guest@mint.app" };
     try { localStorage.setItem("mint_user", JSON.stringify(userData)); } catch {}
     onLogin(userData);
   }
 
   return (
     <div className="auth-root auth-fade-enter">
-      {/* Illustration */}
       <div className="auth-illus"><MintIllustration /></div>
 
-      {/* Titles */}
       <h1 className="auth-title">MINT</h1>
       <p className="auth-sub">
         Your personal financial decision coach. Understand your spending, then decide your next move.
       </p>
 
-      {/* 3-segment progress bar */}
       <div className="auth-progress">
         <div className="auth-progress-seg filled" />
         <div className="auth-progress-seg filled" />
         <div className="auth-progress-seg" />
       </div>
 
-      {/* Social buttons */}
       <button
         id="welcome-google"
         className="auth-btn auth-btn-sage"
@@ -142,7 +118,6 @@ export default function WelcomeScreen({ onNavigate, onLogin }) {
         Continue as Guest
       </button>
 
-      {/* Bottom link */}
       <p className="auth-bottom">
         Already have an account?{" "}
         <button onClick={() => onNavigate("login")}>Log in</button>

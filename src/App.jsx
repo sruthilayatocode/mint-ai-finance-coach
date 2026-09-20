@@ -53,7 +53,7 @@ function MainContent({ authScreen, setAuthScreen, user, setUser, toast, showToas
 
   const TABS = [
     { id: "home",         label: "Home",         Icon: Home },
-    { id: "transactions", label: "Expenses",     Icon: Receipt },
+    { id: "transactions", label: "Transactions", Icon: Receipt },
     { id: "plans",        label: "Plans",        Icon: Target },
     { id: "settings",     label: "Settings",     Icon: Settings },
   ];

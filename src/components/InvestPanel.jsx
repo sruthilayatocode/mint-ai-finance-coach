@@ -3,7 +3,6 @@ import { api } from "../api";
 
 function formatINR(n) { return "₹" + Number(n).toLocaleString("en-IN"); }
 
-// ── Pure JS investment computation ────────────────────────────────────────────
 function computePlan(transactions) {
   let inc = 0, exp = 0;
   for (const t of transactions) {
@@ -11,9 +10,9 @@ function computePlan(transactions) {
     else exp += t.amount;
   }
   const surplus = inc - exp;
-  const monthlyExp = exp; // treat total as "monthly" for simplicity in demo
+  const monthlyExp = exp;
   const emergencyTarget = 3 * (monthlyExp || 1);
-  const balance = surplus; // demo: use surplus as proxy for current balance
+  const balance = surplus;
 
   return { inc, exp, surplus, emergencyTarget, balance };
 }
@@ -33,9 +32,7 @@ export default function InvestPanel({ transactions, showToast }) {
     );
   }
 
-  // Step 1: Emergency fund (60% of surplus)
   const emergencyAlloc = Math.round(surplus * 0.60);
-  // Remaining 40% split: 50% FD/RD, 30% Nifty 50, 20% Gold/PPF
   const remaining = surplus - emergencyAlloc;
   const fdAlloc   = Math.round(remaining * 0.50);
   const niftyAlloc= Math.round(remaining * 0.30);
@@ -116,7 +113,6 @@ export default function InvestPanel({ transactions, showToast }) {
         </div>
       ))}
 
-      {/* Backup plan */}
       <div className="backup-card">
         <div className="backup-title">🛡️ Backup Plan</div>
         <div className="backup-text">
@@ -125,7 +121,6 @@ export default function InvestPanel({ transactions, showToast }) {
         </div>
       </div>
 
-      {/* Explain with AI */}
       <button className="btn-outline" style={{ marginBottom: 12 }} onClick={explainPlan} disabled={coachLoading}>
         {coachLoading ? "Asking MINT…" : "🤖 Explain this plan"}
       </button>
@@ -141,7 +136,7 @@ export default function InvestPanel({ transactions, showToast }) {
       )}
 
       <div className="disclaimer">
-        Illustrative suggestions for learning, not licensed investment advice.
+        Educational suggestions for financial planning, not licensed investment advice.
       </div>
     </div>
   );

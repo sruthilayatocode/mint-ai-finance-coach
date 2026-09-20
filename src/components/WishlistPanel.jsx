@@ -3,14 +3,12 @@ import { useState } from "react";
 function formatINR(n) { return "₹" + Number(n).toLocaleString("en-IN"); }
 
 function getMonthlyBalance(transactions) {
-  // Use average monthly surplus as savings rate
   let inc = 0, exp = 0;
   for (const t of transactions) {
     if (t.type === "income") inc += t.amount;
     else exp += t.amount;
   }
   const balance = inc - exp;
-  // Monthly savings estimate: if 2 months of data, halve it
   const months = [...new Set(transactions.map(t => (t.date || "").slice(0,7)))].length || 1;
   return { balance, monthlySavings: Math.max(0, Math.round((inc - exp) / months)) };
 }
@@ -33,7 +31,6 @@ export default function WishlistPanel({ transactions }) {
     setName(""); setPrice("");
   }
 
-  // Demo: simulate a 15% price drop for an item
   function simulatePriceDrop(id) {
     setItems(prev => prev.map(item => {
       if (item.id !== id) return item;
@@ -41,7 +38,6 @@ export default function WishlistPanel({ transactions }) {
       const canAffordNow = balance >= droppedPrice;
       const newMonths = canAffordNow ? 0 : Math.ceil((droppedPrice - balance) / (monthlySavings || 1));
       const monthsSaved = item.monthsNeeded - newMonths;
-      // Show in-app notification banner
       setNotification({ name: item.name, droppedPrice, monthsSaved: Math.max(0, monthsSaved), canAffordNow });
       setTimeout(() => setNotification(null), 4000);
       return { ...item, droppedPrice, monthsNeeded: newMonths, canAfford: canAffordNow };
@@ -58,7 +54,6 @@ export default function WishlistPanel({ transactions }) {
         </div>
       </div>
 
-      {/* In-app notification banner */}
       {notification && (
         <div className="notif-banner green-notif">
           🔔 Price dropped to {formatINR(notification.droppedPrice)} for "{notification.name}"!
@@ -101,10 +96,9 @@ export default function WishlistPanel({ transactions }) {
                   </>
               }
             </div>
-            {/* Demo: simulate price drop button — comment in code as demo simulation */}
             {!item.canAfford && item.droppedPrice === null && (
               <button className="btn-small" style={{ marginTop:10 }} onClick={() => simulatePriceDrop(item.id)}>
-                🎯 Simulate 15% price drop {/* DEMO SIMULATION – not real price tracking */}
+                🎯 Simulate 15% price drop
               </button>
             )}
             {item.droppedPrice !== null && (

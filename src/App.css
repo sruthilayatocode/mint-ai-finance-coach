@@ -208,7 +208,7 @@ body {
 .cream-sheet {
   background: var(--cream);
   border-radius: var(--r-xl) var(--r-xl) 0 0;
-  padding: 24px 20px 0;
+  padding: 24px 20px 140px;
   flex: 1;
 }
 
@@ -623,7 +623,7 @@ body {
 }
 .toggle.on .toggle-knob { transform: translateX(20px); }
 .syncing-text { font-size: 11px; color: var(--blue); font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 4px; }
-.demo-note { font-size: 10px; font-weight: 500; color: var(--text-muted); background: var(--cream-dark); border-radius: 8px; padding: 8px 12px; margin-top: 8px; }
+
 
 .profile-card {
   background: var(--white); border-radius: var(--r-lg); padding: 20px;

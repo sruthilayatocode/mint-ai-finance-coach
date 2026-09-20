@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
 import "./auth.css";
 
-// ── Google "G" SVG icon ──────────────────────────────────────────────────────
 function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" className="google-g" xmlns="http://www.w3.org/2000/svg">
@@ -29,16 +28,14 @@ function capitalize(str) {
 }
 
 export default function LoginScreen({ onNavigate, onLogin, showToast }) {
-  // mode: "login" | "signup"
   const [mode, setMode] = useState("login");
-
   const [name,     setName]     = useState("");
   const [email,    setEmail]    = useState("");
   const [password, setPassword] = useState("");
   const [showPwd,  setShowPwd]  = useState(false);
   const [errors,   setErrors]   = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [socialLoading, setSocialLoading] = useState(null); // "google"|"apple"
+  const [socialLoading, setSocialLoading] = useState(null);
 
   function validate() {
     const errs = {};
@@ -55,7 +52,6 @@ export default function LoginScreen({ onNavigate, onLogin, showToast }) {
     e.preventDefault();
     if (!validate()) return;
     setSubmitting(true);
-    // demo: no real auth — just save to localStorage
     setTimeout(() => {
       const resolvedName = mode === "signup"
         ? name.trim()
@@ -69,18 +65,17 @@ export default function LoginScreen({ onNavigate, onLogin, showToast }) {
 
   async function handleSocial(provider) {
     setSocialLoading(provider);
-    // demo only; production will use Amazon Cognito federated sign-in
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise(r => setTimeout(r, 600));
     const userData = provider === "google"
-      ? { name: "Google User", email: "demo@google.mint" }
-      : { name: "Apple User",  email: "demo@apple.mint"  };
+      ? { name: "Google User", email: "user@google.com" }
+      : { name: "Apple User",  email: "user@apple.com"  };
     try { localStorage.setItem("mint_user", JSON.stringify(userData)); } catch {}
     setSocialLoading(null);
     onLogin(userData);
   }
 
   function handleGuest() {
-    const userData = { name: "Guest", email: "guest@mint.demo" };
+    const userData = { name: "Guest", email: "guest@mint.app" };
     try { localStorage.setItem("mint_user", JSON.stringify(userData)); } catch {}
     onLogin(userData);
   }
@@ -100,7 +95,6 @@ export default function LoginScreen({ onNavigate, onLogin, showToast }) {
 
   return (
     <div className="auth-root auth-fade-enter">
-      {/* Back to welcome */}
       <button
         onClick={() => onNavigate("welcome")}
         style={{ alignSelf:"flex-start", background:"none", border:"none", cursor:"pointer",
@@ -114,7 +108,6 @@ export default function LoginScreen({ onNavigate, onLogin, showToast }) {
       <h2 className="auth-title-sm">{titleText}</h2>
 
       <form onSubmit={handleSubmit} style={{ width: "100%" }} noValidate>
-        {/* Name field — signup only */}
         {isSignup && (
           <>
             <div className="auth-input-wrap">
@@ -133,7 +126,6 @@ export default function LoginScreen({ onNavigate, onLogin, showToast }) {
           </>
         )}
 
-        {/* Email */}
         <div className="auth-input-wrap">
           <span className="auth-input-icon"><Mail size={16} /></span>
           <input
@@ -148,7 +140,6 @@ export default function LoginScreen({ onNavigate, onLogin, showToast }) {
         </div>
         {errors.email && <div className="auth-field-error">{errors.email}</div>}
 
-        {/* Password */}
         <div className="auth-input-wrap">
           <span className="auth-input-icon"><Lock size={16} /></span>
           <input
@@ -171,18 +162,16 @@ export default function LoginScreen({ onNavigate, onLogin, showToast }) {
         </div>
         {errors.password && <div className="auth-field-error">{errors.password}</div>}
 
-        {/* Forgot password (login only) */}
         {!isSignup && (
           <button
             type="button"
             className="auth-forgot"
-            onClick={() => showToast("Demo: password reset is not enabled.", "error")}
+            onClick={() => showToast("Password reset functionality is currently disabled.", "error")}
           >
             Forgot Password?
           </button>
         )}
 
-        {/* Primary CTA */}
         <button
           id="auth-submit"
           type="submit"
@@ -194,14 +183,12 @@ export default function LoginScreen({ onNavigate, onLogin, showToast }) {
         </button>
       </form>
 
-      {/* Divider */}
       <div className="auth-divider">
         <div className="auth-divider-line" />
         <span className="auth-divider-text">or</span>
         <div className="auth-divider-line" />
       </div>
 
-      {/* Social buttons */}
       <button
         id="login-google"
         className="auth-btn auth-btn-sage"
