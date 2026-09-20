@@ -3,31 +3,8 @@ import { useStore } from "../store";
 import { api } from "../api";
 import { Cloud, Loader, LogOut, RefreshCw, Trash2 } from "lucide-react";
 
-const SOURCE_SAMPLES = {
-  bank: [
-    { description: "HDFC salary credit", amount: 65000, type: "income", category: "Salary" },
-    { description: "HDFC electricity bill", amount: 2200, type: "expense", category: "Bills" },
-  ],
-  gpay: [
-    { description: "GPay Swiggy", amount: 340, type: "expense", category: "Food" },
-    { description: "GPay rent transfer", amount: 8000, type: "expense", category: "Bills" },
-  ],
-  paytm: [
-    { description: "Paytm Uber ride", amount: 180, type: "expense", category: "Transport" },
-    { description: "Paytm movie tickets", amount: 520, type: "expense", category: "Entertainment" },
-  ],
-  phonepe: [
-    { description: "PhonePe Amazon order", amount: 1250, type: "expense", category: "Shopping" },
-    { description: "PhonePe groceries", amount: 760, type: "expense", category: "Food" },
-  ],
-  cards: [
-    { description: "Credit card pharmacy", amount: 640, type: "expense", category: "Other" },
-    { description: "Credit card fuel", amount: 1500, type: "expense", category: "Transport" },
-  ],
-};
-
 const PAYMENT_APPS = [
-  { id: "bank",    name: "HDFC Bank",   emoji: "🏦", sub: "Bank transactions" },
+  { id: "bank",    name: "Bank Account",emoji: "🏦", sub: "Bank transactions" },
   { id: "gpay",    name: "Google Pay",  emoji: "🟢", sub: "UPI payments" },
   { id: "paytm",   name: "Paytm",       emoji: "🔵", sub: "Wallet & UPI" },
   { id: "phonepe", name: "PhonePe",     emoji: "🟣", sub: "UPI transfers" },
@@ -57,11 +34,10 @@ export default function SettingsScreen({ showToast, user, onLogout }) {
     if (settings.sources[appId] === true) return;
     setSyncing(s => ({ ...s, [appId]: true }));
     try {
-      const samples = SOURCE_SAMPLES[appId] || [];
-      const res = await importSourceSamples(appId, samples);
-      showToast(res.skipped ? "Already imported for this source." : `${samples.length} transactions imported`);
+      const res = await importSourceSamples(appId, []);
+      showToast(res.skipped ? "Already connected." : "Connected source.");
     } catch (error) {
-      showToast(`Import failed: ${error.message}`, "error");
+      showToast(`Connection failed: ${error.message}`, "error");
     } finally {
       setSyncing(s => ({ ...s, [appId]: false }));
     }
@@ -76,8 +52,8 @@ export default function SettingsScreen({ showToast, user, onLogout }) {
     }
   }
 
-  const displayName  = user?.name  || settings.name  || "Sruthi";
-  const displayEmail = user?.email || "sruthi@mint.demo";
+  const displayName  = user?.name  || settings.name  || "User";
+  const displayEmail = user?.email || "user@mint.app";
   const avatarLetter = displayName.charAt(0).toUpperCase();
 
   return (
@@ -175,7 +151,7 @@ export default function SettingsScreen({ showToast, user, onLogout }) {
                   <div className="payment-sub">{app.sub}</div>
                   {isSyncing && (
                     <div className="syncing-text">
-                      <Loader size={10} style={{ animation: "spin 1s linear infinite" }} /> Syncing transactions...
+                      <Loader size={10} style={{ animation: "spin 1s linear infinite" }} /> Connecting...
                     </div>
                   )}
                   {isConnected && !isSyncing && (

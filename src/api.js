@@ -14,23 +14,7 @@ const m = (offset = 0) => {
 };
 const day = (month, d) => `${month}-${String(d).padStart(2, "0")}`;
 
-let mockTxns = [
-  { id: "1001", userId: "demo-user", amount: 65000, description: "Monthly Salary",       type: "income",  category: "Salary",        date: day(m(0), 1)  },
-  { id: "1002", userId: "demo-user", amount: 4200,  description: "Swiggy & Zomato",       type: "expense", category: "Food",          date: day(m(0), 3)  },
-  { id: "1003", userId: "demo-user", amount: 1800,  description: "Metro & Ola rides",     type: "expense", category: "Transport",     date: day(m(0), 5)  },
-  { id: "1004", userId: "demo-user", amount: 8500,  description: "Myntra sale",           type: "expense", category: "Shopping",      date: day(m(0), 7)  },
-  { id: "1005", userId: "demo-user", amount: 2200,  description: "Electricity bill",      type: "expense", category: "Bills",         date: day(m(0), 10) },
-  { id: "1006", userId: "demo-user", amount: 999,   description: "Netflix + Spotify",     type: "expense", category: "Entertainment", date: day(m(0), 12) },
-  { id: "1007", userId: "demo-user", amount: 3100,  description: "Groceries - DMart",     type: "expense", category: "Food",          date: day(m(0), 15) },
-  { id: "1008", userId: "demo-user", amount: 650,   description: "Petrol",                type: "expense", category: "Transport",     date: day(m(0), 18) },
-  { id: "1009", userId: "demo-user", amount: 65000, description: "Monthly Salary",        type: "income",  category: "Salary",        date: day(m(1), 1)  },
-  { id: "1010", userId: "demo-user", amount: 5800,  description: "Restaurants & cafes",   type: "expense", category: "Food",          date: day(m(1), 4)  },
-  { id: "1011", userId: "demo-user", amount: 2100,  description: "Uber & auto rides",     type: "expense", category: "Transport",     date: day(m(1), 8)  },
-  { id: "1012", userId: "demo-user", amount: 3500,  description: "Amazon purchases",      type: "expense", category: "Shopping",      date: day(m(1), 11) },
-  { id: "1013", userId: "demo-user", amount: 1200,  description: "Internet & mobile",     type: "expense", category: "Bills",         date: day(m(1), 14) },
-  { id: "1014", userId: "demo-user", amount: 1500,  description: "Movie + bowling",       type: "expense", category: "Entertainment", date: day(m(1), 20) },
-  { id: "1015", userId: "demo-user", amount: 2900,  description: "Groceries - BigBasket", type: "expense", category: "Food",          date: day(m(1), 22) },
-];
+let mockTxns = [];
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 

@@ -14,11 +14,21 @@ export function getByCategory(transactions = []) {
   const summary = buildSummary(transactions);
   const totalExp = summary.totalExpenses;
   const catMap = {};
+  const lastMonthCatMap = {};
+
+  const now = new Date();
+  const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  
+  const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const prevMonthStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}`;
 
   for (const t of transactions) {
     if (t.type === "expense") {
       const amt = Number(t.amount) || 0;
       catMap[t.category] = (catMap[t.category] || 0) + amt;
+      if (t.date && t.date.startsWith(prevMonthStr)) {
+        lastMonthCatMap[t.category] = (lastMonthCatMap[t.category] || 0) + amt;
+      }
     }
   }
 
@@ -27,7 +37,7 @@ export function getByCategory(transactions = []) {
       category,
       amount,
       pct: totalExp > 0 ? Math.round((amount / totalExp) * 100) : 0,
-      lastMonthAmount: Math.round(amount * 0.85), // comparative mock baseline
+      lastMonthAmount: lastMonthCatMap[category] || 0,
     }))
     .sort((a, b) => b.amount - a.amount);
 
@@ -38,17 +48,21 @@ export function getInsight(transactions = [], budget = 30000) {
   const cats = getByCategory(transactions);
   if (cats.length === 0) return null;
 
-  // Find category with highest percentage of expenses
   const top = cats[0];
-  const increasePct = 15; // > 10%
-  return `You've spent ${increasePct}% more on ${top.category} than last month. If this continues, you may exceed your ₹${budget.toLocaleString("en-IN")} budget.`;
+  if (top.lastMonthAmount > 0 && top.amount > top.lastMonthAmount) {
+    const increasePct = Math.round(((top.amount - top.lastMonthAmount) / top.lastMonthAmount) * 100);
+    return `You've spent ${increasePct}% more on ${top.category} than last month. If this continues, you may exceed your ₹${budget.toLocaleString("en-IN")} budget.`;
+  }
+
+  return `Your highest spending category is ${top.category} at ₹${top.amount.toLocaleString("en-IN")}. Total budget: ₹${budget.toLocaleString("en-IN")}.`;
 }
 
 export function getProjectedMonthEnd(transactions = []) {
   const summary = buildSummary(transactions);
   const currentExp = summary.totalExpenses;
-  const daysInMonth = 30;
-  const currentDay = 20; // mid-month pace
+  const now = new Date();
+  const currentDay = Math.max(1, now.getDate());
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const projected = Math.round((currentExp / currentDay) * daysInMonth);
   return projected;
 }

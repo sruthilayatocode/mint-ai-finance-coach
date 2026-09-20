@@ -23,25 +23,10 @@ function HeroIllustration() {
 }
 
 export default function HomeScreen({ showToast, user }) {
-  const { loading, summary, goalPct, settings, seedData } = useStore();
+  const { loading, summary, goalPct, settings } = useStore();
   const [addOpen, setAddOpen] = useState(false);
-  const [seeding, setSeeding] = useState(false);
 
   const { totalIncome, totalExpenses, balance } = summary;
-
-  async function handleSeed() {
-    if (seeding) return;
-    setSeeding(true);
-    try {
-      const res = await seedData();
-      showToast(`Demo data loaded: ${res.count || res.seeded || 0} transactions`);
-    } catch (error) {
-      showToast(`Seed failed: ${error.message}`, "error");
-    } finally {
-      setSeeding(false);
-    }
-  }
-
   const displayName = user?.name || settings?.name || "there";
 
   return (
@@ -70,9 +55,6 @@ export default function HomeScreen({ showToast, user }) {
             <div className="balance-dots">
               <div className="balance-dot active" /><div className="balance-dot" /><div className="balance-dot" />
             </div>
-            <button className="btn-small" onClick={handleSeed} disabled={seeding} style={{ background: "var(--navy)", color: "white" }}>
-              {seeding ? "Loading…" : "🎲 Demo data"}
-            </button>
           </div>
         </div>
       </div>

@@ -11,8 +11,8 @@ import {
 const STORAGE_KEY = "mint_settings";
 
 const DEFAULT_SETTINGS = {
-  name: "Sruthi",
-  role: "Student / Freelancer",
+  name: "User",
+  role: "Member",
   monthlySavings: 12000,
   budget: 30000,
   savingsGoal: 50000,
@@ -25,10 +25,10 @@ const DEFAULT_SETTINGS = {
     priceAlerts: true,
   },
   bank: {
-    connected: true,
-    name: "HDFC Bank",
-    last4: "4092",
-    lastSynced: "Just now",
+    connected: false,
+    name: "",
+    last4: "",
+    lastSynced: "",
   },
   sources: {
     gpay: false,
@@ -132,7 +132,7 @@ export function StoreProvider({ children }) {
     return res;
   }, [fetchTransactions]);
 
-  const importSourceSamples = useCallback(async (sourceId, samples) => {
+  const importSourceSamples = useCallback(async (sourceId, samples = []) => {
     if (state.settings.sources[sourceId] === true) return { skipped: true, count: 0 };
     try {
       if (localStorage.getItem(importedKey(sourceId)) === "true") {
@@ -140,7 +140,9 @@ export function StoreProvider({ children }) {
         return { skipped: true, count: 0 };
       }
     } catch {}
-    await Promise.all(samples.map((s) => api.addTransaction(s)));
+    if (samples.length > 0) {
+      await Promise.all(samples.map((s) => api.addTransaction(s)));
+    }
     try {
       localStorage.setItem(importedKey(sourceId), "true");
     } catch {}

@@ -82,7 +82,7 @@ export default function ExpensesScreen() {
               <div className="empty-state">
                 <div className="empty-icon">📭</div>
                 <div className="empty-text">
-                  {search ? "No matching transactions found." : "No transactions yet.\nGo to Home and load demo data!"}
+                  {search ? "No matching transactions found." : "No transactions yet.\nAdd your first transaction on the Home tab!"}
                 </div>
               </div>
             ) : (
