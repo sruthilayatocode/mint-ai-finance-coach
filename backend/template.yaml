@@ -1,0 +1,132 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: MINT Backend using AWS SAM
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+
+Resources:
+  MintTransactionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: mint-transactions
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+
+  MintApiGateway:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowMethods:
+          - GET
+          - POST
+          - OPTIONS
+        AllowHeaders:
+          - "*"
+        AllowOrigins:
+          - "*"
+
+  MintBackendFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref MintTransactionsTable
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MintTransactionsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+                - bedrock:Converse
+              Resource: "*"
+      Events:
+        GetTransactions:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MintApiGateway
+            Path: /transactions
+            Method: GET
+        AddTransaction:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MintApiGateway
+            Path: /transactions
+            Method: POST
+        SeedTransactions:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MintApiGateway
+            Path: /seed
+            Method: POST
+        Simulate:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MintApiGateway
+            Path: /simulate
+            Method: POST
+        Coach:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MintApiGateway
+            Path: /coach
+            Method: POST
+        OptionsTransactions:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MintApiGateway
+            Path: /transactions
+            Method: OPTIONS
+        OptionsSeed:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MintApiGateway
+            Path: /seed
+            Method: OPTIONS
+        OptionsSimulate:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MintApiGateway
+            Path: /simulate
+            Method: OPTIONS
+        OptionsCoach:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MintApiGateway
+            Path: /coach
+            Method: OPTIONS
+
+Parameters:
+  BedrockModelId:
+    Type: String
+    Default: anthropic.claude-3-haiku-20240307-v1:0
+    Description: The Bedrock Model ID to use for the AI Coach
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${MintApiGateway}.execute-api.${AWS::Region}.amazonaws.com"
+  LambdaFunctionName:
+    Description: "Backend Lambda Function Name"
+    Value: !Ref MintBackendFunction
+  DynamoDBTableName:
+    Description: "DynamoDB Table Name"
+    Value: !Ref MintTransactionsTable

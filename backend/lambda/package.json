@@ -1,0 +1,11 @@
+{
+  "name": "mint-backend",
+  "version": "1.0.0",
+  "description": "Backend for MINT application",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
